@@ -8,12 +8,36 @@
 		<script src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js"></script>
 		<script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
 		<script>
+			function covert(s)
+			{
+				var numbers = s.split(/[-\/]/);
+				return parseFloat(numbers[0]) + (parseFloat(numbers[1])  + parseFloat(numbers[2]) / 60.0) / 60.0;
+			}
 			$(document).ready(function(){
 				var mapOptions = { zoom: 11, center: new google.maps.LatLng(22.3203648, 114.16977300000008) };
 				var map = new google.maps.Map($("#map")[0] , mapOptions);
-				d3.csv("./locations.csv", function(data){
+				d3.csv("locations.csv", function(data){
 					var d = d3.entries(data);
-					alert(data);
+					console.log(d.length);
+					var infowindow = new google.maps.InfoWindow();
+					for (var i = 0; i < d.length; i++)
+					{
+						var entry = d[i];
+						var lat = covert(entry.value.lat);
+						var lng = covert(entry.value.long);
+						var marker = new google.maps.Marker({
+							position: new google.maps.LatLng(lat, lng),
+							map: map,
+							title: entry.value.Name
+						});
+						var content = "<b>" + entry.value.name + "</b><br/>" + entry.value.address;
+						google.maps.event.addListener(marker, 'click',(function(marker,content,infowindow){ 
+							return function() {
+								infowindow.setContent(content);
+								infowindow.open(map,marker);
+							};
+						})(marker,content,infowindow));
+					};
 				});
 			});
 		</script>
